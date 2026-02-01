@@ -1,30 +1,12 @@
 # =============================================================================
 # Terraform Variables
 # =============================================================================
-
-# -----------------------------------------------------------------------------
-# Azure Authentication
-# -----------------------------------------------------------------------------
-variable "subscription_id" {
-  type        = string
-  description = "Azure Subscription ID"
-}
-
-variable "tenant_id" {
-  type        = string
-  description = "Azure Tenant ID"
-}
-
-variable "client_id" {
-  type        = string
-  description = "Azure Service Principal Client ID"
-}
-
-variable "client_secret" {
-  type        = string
-  description = "Azure Service Principal Client Secret"
-  sensitive   = true
-}
+# Authentication: Set these environment variables before running:
+#   export ARM_SUBSCRIPTION_ID="..."
+#   export ARM_TENANT_ID="..."
+#   export ARM_CLIENT_ID="..."
+#   export ARM_CLIENT_SECRET="..."
+# =============================================================================
 
 # -----------------------------------------------------------------------------
 # Resource Configuration

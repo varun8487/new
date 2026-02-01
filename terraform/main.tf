@@ -19,13 +19,11 @@ terraform {
 
 # -----------------------------------------------------------------------------
 # Provider Configuration
+# Uses ARM_* environment variables automatically:
+#   ARM_SUBSCRIPTION_ID, ARM_TENANT_ID, ARM_CLIENT_ID, ARM_CLIENT_SECRET
 # -----------------------------------------------------------------------------
 provider "azurerm" {
   features {}
-  subscription_id = var.subscription_id
-  tenant_id       = var.tenant_id
-  client_id       = var.client_id
-  client_secret   = var.client_secret
 }
 
 # -----------------------------------------------------------------------------

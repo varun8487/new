@@ -1,29 +1,39 @@
 # =============================================================================
 # Packer Variables for Azure Ubuntu Image
 # =============================================================================
+# Authentication: Set these environment variables before running:
+#   export ARM_SUBSCRIPTION_ID="..."
+#   export ARM_TENANT_ID="..."
+#   export ARM_CLIENT_ID="..."
+#   export ARM_CLIENT_SECRET="..."
+# =============================================================================
 
 # -----------------------------------------------------------------------------
-# Azure Authentication
+# Azure Authentication (reads from ARM_* environment variables)
 # -----------------------------------------------------------------------------
 variable "subscription_id" {
   type        = string
   description = "Azure Subscription ID"
+  default     = env("ARM_SUBSCRIPTION_ID")
 }
 
 variable "tenant_id" {
   type        = string
   description = "Azure Tenant ID"
+  default     = env("ARM_TENANT_ID")
 }
 
 variable "client_id" {
   type        = string
   description = "Azure Service Principal Client ID"
+  default     = env("ARM_CLIENT_ID")
 }
 
 variable "client_secret" {
   type        = string
   description = "Azure Service Principal Client Secret"
   sensitive   = true
+  default     = env("ARM_CLIENT_SECRET")
 }
 
 # -----------------------------------------------------------------------------
