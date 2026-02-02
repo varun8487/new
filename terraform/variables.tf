@@ -19,19 +19,19 @@ variable "location" {
 
 variable "rg_name" {
   type        = string
-  default     = "rg-image-poc"
+  default     = "MAHLE"
   description = "Name of the resource group for VM resources"
 }
 
 variable "image_rg" {
   type        = string
-  default     = "rg-image-poc"
+  default     = "MAHLE"
   description = "Resource group containing the Packer-built image"
 }
 
 variable "managed_image_name" {
   type        = string
-  default     = "img-ubuntu-22"
+  default     = "Ubuntu-Golden-POC-1769783997"
   description = "Name of the managed image built by Packer"
 }
 
