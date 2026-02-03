@@ -17,4 +17,6 @@ tags = {
   Owner       = "DevOps"
   Environment = "Dev"
   ManagedBy   = "Terraform"
+  CostCenter  = "IT-001"
+  AppID       = "APP-001"
 }

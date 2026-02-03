@@ -1,0 +1,145 @@
+---
+- name: Configure VM with PostgreSQL, Nginx, and Application
+  hosts: all
+  become: yes
+  vars:
+    # PostgreSQL
+    db_name: "appdb"
+    db_user: "appuser"
+    db_password: "SecureP@ss123!"
+    
+    # Nginx
+    app_port: 8080
+    
+    # App
+    app_name: "myapp"
+    app_dir: "/opt/myapp"
+
+  tasks:
+    # -------------------------------------------------------------------------
+    # System Updates
+    # -------------------------------------------------------------------------
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    # -------------------------------------------------------------------------
+    # PostgreSQL Installation
+    # -------------------------------------------------------------------------
+    - name: Install PostgreSQL
+      apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+        state: present
+
+    - name: Start PostgreSQL
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Create database
+      shell: |
+        sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '{{ db_name }}'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE {{ db_name }}"
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Create database user
+      shell: |
+        sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname = '{{ db_user }}'" | grep -q 1 || sudo -u postgres psql -c "CREATE USER {{ db_user }} WITH PASSWORD '{{ db_password }}'";
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ db_name }} TO {{ db_user }}"
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Print PostgreSQL status
+      debug:
+        msg: "PostgreSQL installed! DB: {{ db_name }}, User: {{ db_user }}"
+
+    # -------------------------------------------------------------------------
+    # Nginx Installation
+    # -------------------------------------------------------------------------
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create Nginx config
+      copy:
+        dest: /etc/nginx/sites-available/app.conf
+        content: |
+          server {
+              listen 80;
+              server_name _;
+              
+              location / {
+                  proxy_pass http://127.0.0.1:{{ app_port }};
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+              }
+              
+              location /health {
+                  return 200 'OK';
+                  add_header Content-Type text/plain;
+              }
+          }
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/app.conf
+        dest: /etc/nginx/sites-enabled/app.conf
+        state: link
+
+    - name: Remove default site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Restart Nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+
+    - name: Print Nginx status
+      debug:
+        msg: "Nginx installed! Proxying to port {{ app_port }}"
+
+    # -------------------------------------------------------------------------
+    # Application Setup
+    # -------------------------------------------------------------------------
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create app config
+      copy:
+        dest: "{{ app_dir }}/config.ini"
+        content: |
+          [database]
+          host = localhost
+          port = 5432
+          name = {{ db_name }}
+          user = {{ db_user }}
+          password = {{ db_password }}
+          
+          [server]
+          port = {{ app_port }}
+
+    - name: Print completion message
+      debug:
+        msg: |
+          ============================================
+          DEPLOYMENT COMPLETE!
+          ============================================
+          PostgreSQL: localhost:5432
+          Database: {{ db_name }}
+          DB User: {{ db_user }}
+          Nginx: Port 80 -> {{ app_port }}
+          App Config: {{ app_dir }}/config.ini
+          ============================================
